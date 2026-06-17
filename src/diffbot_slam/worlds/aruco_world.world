@@ -2,10 +2,10 @@
 <sdf version="1.6">
   <world name="aruco_world">
 
-    <!-- Physics -->
+    <!-- Physics — reduced rate for stable clock on slower systems -->
     <physics type="ode">
-      <real_time_update_rate>1000.0</real_time_update_rate>
-      <max_step_size>0.001</max_step_size>
+      <real_time_update_rate>200.0</real_time_update_rate>
+      <max_step_size>0.005</max_step_size>
     </physics>
 
     <!-- Lighting -->

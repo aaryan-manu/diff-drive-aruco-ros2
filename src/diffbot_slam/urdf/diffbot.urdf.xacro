@@ -184,6 +184,7 @@
   <!-- Differential Drive Controller -->
   <gazebo>
     <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+      <update_rate>20</update_rate>
       <left_joint>left_wheel_joint</left_joint>
       <right_joint>right_wheel_joint</right_joint>
       <wheel_separation>${wheel_sep}</wheel_separation>

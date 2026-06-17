@@ -21,6 +21,7 @@ A ROS 2 Humble differential-drive robot simulation with **ArUco marker detection
 ### Option A — Automated (recommended)
 
 ```bash
+git clone https://github.com/aaryan-manu/diff-drive-aruco-ros2.git ~/diffbot_slam_ws
 cd ~/diffbot_slam_ws
 chmod +x install_deps.sh
 ./install_deps.sh
@@ -83,9 +84,10 @@ sudo rosdep init          # skip if already done
 rosdep update --rosdistro=humble
 ```
 
-#### 5. Build the workspace
+#### 5. Clone and Build the workspace
 
 ```bash
+git clone https://github.com/aaryan-manu/diff-drive-aruco-ros2.git ~/diffbot_slam_ws
 source /opt/ros/humble/setup.bash
 cd ~/diffbot_slam_ws
 rosdep install --from-paths src --ignore-src -r -y
@@ -237,7 +239,7 @@ diffbot_slam_ws/
 | Problem | Solution |
 |---------|----------|
 | Gazebo crashes, gets stuck, or port conflicts | Run the comprehensive cleanup command: `killall -9 rviz2 gzserver gzclient robot_state_publisher` and try again. |
-| RViz shows `TF_OLD_DATA` or time jump warnings | Ensure Gazebo differential drive plugin does not publish wheel TFs (`publish_wheel_tf` set to `false` in `diffbot.urdf.xacro`) to prevent conflicts with `robot_state_publisher` and joint state publishing. |
+| RViz shows `TF_OLD_DATA` or time jump warnings | Ensure Gazebo's `/clock` publish rate matches the physics update rate. This has been fixed by passing `extra_gazebo_args: '--ros-args -p publish_rate:=200.0'` in the simulation launch file to prevent clock desync. Also ensure no orphaned background TF nodes are still running. |
 | Nav2 plugins fail to load | Ensure the correct Humble plugin formatting in `nav2_params.yaml` (using namespace separators `nav2_rvcpp_gp_planner::GlobalPlanner` vs `nav2_navfn_planner/NavfnPlanner`). |
 | No LiDAR data in RViz | Check Fixed Frame is set to `odom` or `map` in RViz Global Options. |
 | ArUco markers not detected | Ensure camera is pointing at a marker; check `/camera/image_raw` topic. OpenCV ArUco detector in `aruco_detector.py` has been updated to use modern `solvePnP` to avoid deprecation issues. |

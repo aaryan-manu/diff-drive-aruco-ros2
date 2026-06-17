@@ -42,10 +42,13 @@ def generate_launch_description():
         launch_arguments={
             'world': world_file,
             'verbose': 'true',
+            'extra_gazebo_args': '--ros-args -p publish_rate:=200.0',
         }.items()
     )
 
     # ── Robot State Publisher ──
+    # Delayed to start AFTER Gazebo so /clock is already publishing
+    # when RSP begins using sim time.
     robot_state_pub = Node(
         package='robot_state_publisher',
         executable='robot_state_publisher',
@@ -56,8 +59,11 @@ def generate_launch_description():
             'robot_description': robot_desc,
         }],
     )
+    # Give Gazebo 3s to fully start and begin publishing /clock
+    delayed_rsp = TimerAction(period=3.0, actions=[robot_state_pub])
 
-    # ── Spawn Entity (delayed 5s to let Gazebo start) ──
+    # ── Spawn Entity ──
+    # Delayed 6s total (after RSP is up) so robot_description topic exists
     spawn = Node(
         package='gazebo_ros',
         executable='spawn_entity.py',
@@ -69,7 +75,7 @@ def generate_launch_description():
         ],
         output='screen'
     )
-    delayed_spawn = TimerAction(period=5.0, actions=[spawn])
+    delayed_spawn = TimerAction(period=6.0, actions=[spawn])
 
     # ── ArUco Detector (starts after spawn completes) ──
     aruco_detector = Node(
@@ -80,7 +86,8 @@ def generate_launch_description():
         parameters=[{'use_sim_time': True}],
     )
 
-    # ── RViz (starts after spawn completes) ──
+    # ── RViz ──
+    # Delayed 10s after spawn so Gazebo physics clock is fully stable
     rviz = Node(
         package='rviz2',
         executable='rviz2',
@@ -89,12 +96,13 @@ def generate_launch_description():
         parameters=[{'use_sim_time': True}],
         output='screen',
     )
+    delayed_rviz = TimerAction(period=10.0, actions=[rviz])
 
-    # Start aruco_detector and rviz only after spawn_entity finishes
+    # After spawn finishes: start aruco detector, schedule RViz
     after_spawn = RegisterEventHandler(
         OnProcessExit(
             target_action=spawn,
-            on_exit=[aruco_detector, rviz],
+            on_exit=[aruco_detector, delayed_rviz],
         )
     )
 
@@ -102,7 +110,7 @@ def generate_launch_description():
         set_gazebo_model_path,
         set_gazebo_model_database_uri,
         gazebo,
-        robot_state_pub,
+        delayed_rsp,
         delayed_spawn,
         after_spawn,
     ])
