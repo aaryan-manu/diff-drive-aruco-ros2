@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">
+
+    <!--
+        Disables shared-memory (SHM) transport.
+
+        Why: When Gazebo is restarted, FastRTPS SHM segments from the old
+        session persist in /dev/shm.  New nodes joining the DDS domain can
+        receive stale messages (e.g. /clock at t=966s while the new Gazebo
+        is at t=22s), causing "jump back in time" errors that corrupt every
+        TF buffer in the system.
+
+        Using only UDPv4 transport (loopback for single-machine setups)
+        eliminates the stale-SHM problem entirely because UDP has no
+        persistent delivery cache.
+    -->
+    <transport_descriptors>
+        <transport_descriptor>
+            <transport_id>udp_loopback</transport_id>
+            <type>UDPv4</type>
+        </transport_descriptor>
+    </transport_descriptors>
+
+    <participant profile_name="default_participant" is_default_profile="true">
+        <rtps>
+            <userTransports>
+                <transport_id>udp_loopback</transport_id>
+            </userTransports>
+            <useBuiltinTransports>false</useBuiltinTransports>
+        </rtps>
+    </participant>
+
+</profiles>

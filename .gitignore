@@ -53,3 +53,16 @@ build/
 install/
 log/
 .colcon/
+
+# Python
+__pycache__/
+*.egg-info/
+
+# TF debug artifacts
+frames_*.gv
+frames_*.pdf
+
+# IDE / tooling
+.gemini/
+.vscode/
+.idea/

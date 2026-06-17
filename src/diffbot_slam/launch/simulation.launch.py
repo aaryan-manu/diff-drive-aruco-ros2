@@ -9,6 +9,16 @@ from ament_index_python.packages import get_package_share_directory
 import xacro
 
 
+# ── FastDDS profile path (set before any ROS 2 context is created) ──
+os.environ.setdefault(
+    'FASTRTPS_DEFAULT_PROFILES_FILE',
+    os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        'config', 'fastdds_no_shm.xml'
+    )
+)
+
+
 def generate_launch_description():
     pkg_share = get_package_share_directory('diffbot_slam')
 
@@ -32,6 +42,14 @@ def generate_launch_description():
         ''
     )
 
+    # Disable FastRTPS shared-memory transport to prevent stale DDS messages
+    # from a previous crashed Gazebo session causing "jump back in time" errors.
+    fastdds_profile = os.path.join(pkg_share, 'config', 'fastdds_no_shm.xml')
+    set_fastrtps_profile = SetEnvironmentVariable(
+        'FASTRTPS_DEFAULT_PROFILES_FILE',
+        fastdds_profile
+    )
+
     # ── Gazebo ──
     gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([
@@ -42,7 +60,7 @@ def generate_launch_description():
         launch_arguments={
             'world': world_file,
             'verbose': 'true',
-            'extra_gazebo_args': '--ros-args -p publish_rate:=200.0',
+            'extra_gazebo_args': '--ros-args -p publish_rate:=50.0',
         }.items()
     )
 
@@ -109,6 +127,7 @@ def generate_launch_description():
     return LaunchDescription([
         set_gazebo_model_path,
         set_gazebo_model_database_uri,
+        set_fastrtps_profile,
         gazebo,
         delayed_rsp,
         delayed_spawn,

@@ -109,6 +109,12 @@ source ~/.bashrc
 
 > **Tip:** Open each command in a separate terminal. Every terminal must have the workspace sourced.
 
+> **Important:** If you previously ran the simulation and it crashed or was killed, run the cleanup script first:
+> ```bash
+> cd ~/diffbot_slam_ws
+> ./clean_restart.sh
+> ```
+
 **Terminal 1 — Launch simulation (Gazebo + RViz + ArUco Detector):**
 ```bash
 cd ~/diffbot_slam_ws
@@ -180,6 +186,7 @@ When no marker is detected, the robot stops (all velocities = 0).
 ```
 diffbot_slam_ws/
 ├── install_deps.sh                   ← One-command installer
+├── clean_restart.sh                  ← Kill stale processes & clean SHM before relaunching
 ├── README.md
 └── src/
     └── diffbot_slam/
@@ -203,7 +210,8 @@ diffbot_slam_ws/
         ├── config/
         │   ├── rviz_config.rviz       ← RViz display layout
         │   ├── slam_toolbox_params.yaml
-        │   └── nav2_params.yaml
+        │   ├── nav2_params.yaml
+        │   └── fastdds_no_shm.xml    ← FastDDS profile: disables SHM transport
         ├── maps/
         │   ├── my_map.pgm
         │   └── my_map.yaml
@@ -238,14 +246,15 @@ diffbot_slam_ws/
 
 | Problem | Solution |
 |---------|----------|
-| Gazebo crashes, gets stuck, or port conflicts | Run the comprehensive cleanup command: `killall -9 rviz2 gzserver gzclient robot_state_publisher` and try again. |
-| RViz shows `TF_OLD_DATA` or time jump warnings | Ensure Gazebo's `/clock` publish rate matches the physics update rate. This has been fixed by passing `extra_gazebo_args: '--ros-args -p publish_rate:=200.0'` in the simulation launch file to prevent clock desync. Also ensure no orphaned background TF nodes are still running. |
-| Nav2 plugins fail to load | Ensure the correct Humble plugin formatting in `nav2_params.yaml` (using namespace separators `nav2_rvcpp_gp_planner::GlobalPlanner` vs `nav2_navfn_planner/NavfnPlanner`). |
+| Gazebo crashes, port conflicts, or stale processes | Run `./clean_restart.sh` from the workspace root. This kills stale Gazebo/RViz processes, cleans FastRTPS shared memory, and restarts the ROS 2 daemon. |
+| RViz shows `TF_OLD_DATA` or "jump back in time" | **Root cause:** FastRTPS shared memory (SHM) caches old DDS messages from a previous Gazebo session. When the new session starts at a different sim-time, stale messages corrupt every TF buffer. **Fix (already applied):** All launch files now load `config/fastdds_no_shm.xml` which disables SHM transport and forces UDPv4. If it still happens, run `./clean_restart.sh` and relaunch. |
+| Nav2 plugins fail to load | Ensure the correct Humble plugin formatting in `nav2_params.yaml` (e.g. `nav2_navfn_planner/NavfnPlanner`). |
 | No LiDAR data in RViz | Check Fixed Frame is set to `odom` or `map` in RViz Global Options. |
-| ArUco markers not detected | Ensure camera is pointing at a marker; check `/camera/image_raw` topic. OpenCV ArUco detector in `aruco_detector.py` has been updated to use modern `solvePnP` to avoid deprecation issues. |
+| ArUco markers not detected | Ensure camera is pointing at a marker; check `/camera/image_raw` topic. The ArUco detector uses modern `cv2.solvePnP` (not the deprecated `estimatePoseSingleMarkers`). |
 | `ModuleNotFoundError: cv2` | Run `pip3 install --user opencv-contrib-python` or use `install_deps.sh`. |
 | Build fails with missing dependencies | Run `rosdep install --from-paths src --ignore-src -r -y` or run `install_deps.sh`. |
 | Teleop not sending commands | Make sure the teleop terminal window is focused while pressing keys. |
+| `RTPS_TRANSPORT_SHM Error` in console | Harmless if using the FastDDS no-SHM profile. Run `rm -f /dev/shm/fastrtps_*` to clean up residual segments. |
 
 ---
 
