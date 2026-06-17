@@ -1,0 +1,120 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="aruco_world">
+
+    <!-- Physics -->
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+    </physics>
+
+    <!-- Lighting -->
+    <include><uri>model://sun</uri></include>
+    <include><uri>model://ground_plane</uri></include>
+
+    <!-- ── Boundary Walls ── -->
+    <model name="walls">
+      <static>true</static>
+      <link name="wall_north">
+        <pose>0 5 0.5 0 0 0</pose>
+        <collision name="c"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient></material>
+        </visual>
+      </link>
+      <link name="wall_south">
+        <pose>0 -5 0.5 0 0 0</pose>
+        <collision name="c"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient></material>
+        </visual>
+      </link>
+      <link name="wall_east">
+        <pose>5 0 0.5 0 0 1.5707</pose>
+        <collision name="c"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient></material>
+        </visual>
+      </link>
+      <link name="wall_west">
+        <pose>-5 0 0.5 0 0 1.5707</pose>
+        <collision name="c"><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>10 0.2 1</size></box></geometry>
+          <material><ambient>0.8 0.8 0.8 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── Obstacle Box ── -->
+    <model name="box1">
+      <static>true</static>
+      <pose>2 2 0.25 0 0 0</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>0.5 0.5 0.5</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.5 0.5 0.5</size></box></geometry>
+          <material><ambient>0.6 0.3 0.1 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── Obstacle Box 2 ── -->
+    <model name="box2">
+      <static>true</static>
+      <pose>-2 -1 0.5 0 0 0.3</pose>
+      <link name="link">
+        <collision name="c"><geometry><box><size>1.0 0.3 1.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>1.0 0.3 1.0</size></box></geometry>
+          <material><ambient>0.4 0.4 0.6 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ── L-shaped obstacle ── -->
+    <model name="l_wall">
+      <static>true</static>
+      <link name="link_a">
+        <pose>-1 3 0.5 0 0 0</pose>
+        <collision name="c"><geometry><box><size>2.0 0.2 1.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>2.0 0.2 1.0</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient></material>
+        </visual>
+      </link>
+      <link name="link_b">
+        <pose>-2 2.2 0.5 0 0 0</pose>
+        <collision name="c"><geometry><box><size>0.2 1.8 1.0</size></box></geometry></collision>
+        <visual name="v"><geometry><box><size>0.2 1.8 1.0</size></box></geometry>
+          <material><ambient>0.7 0.7 0.7 1</ambient></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- ══ ArUco Marker 1 — North Wall (Turn Left) ══ -->
+    <include>
+      <uri>model://aruco_marker_1</uri>
+      <name>aruco_marker_1</name>
+      <pose>0 4.85 0.5 0 0 0</pose>
+    </include>
+
+    <!-- ══ ArUco Marker 2 — East Wall (Turn Right) ══ -->
+    <include>
+      <uri>model://aruco_marker_2</uri>
+      <name>aruco_marker_2</name>
+      <pose>4.85 0 0.5 0 0 1.5707</pose>
+    </include>
+
+    <!-- ══ ArUco Marker 3 — South Wall (Forward) ══ -->
+    <include>
+      <uri>model://aruco_marker_3</uri>
+      <name>aruco_marker_3</name>
+      <pose>0 -4.85 0.5 0 0 3.14159</pose>
+    </include>
+
+    <!-- ══ ArUco Marker 4 — West Wall (Backward) ══ -->
+    <include>
+      <uri>model://aruco_marker_4</uri>
+      <name>aruco_marker_4</name>
+      <pose>-4.85 0 0.5 0 0 -1.5707</pose>
+    </include>
+
+  </world>
+</sdf>
