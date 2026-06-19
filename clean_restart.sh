@@ -67,6 +67,10 @@ echo ""
 if [ "$1" = "--launch" ]; then
     echo -e "${YELLOW}Launching simulation...${NC}"
     cd "${SCRIPT_DIR}"
+    # Explicitly force localhost only to bypass firewalls and Wi-Fi cross-talk
+    export ROS_DOMAIN_ID=189
+    export ROS_LOCALHOST_ONLY=0
+    unset FASTRTPS_DEFAULT_PROFILES_FILE   
     source install/setup.bash
     ros2 launch diffbot_slam simulation.launch.py
 fi

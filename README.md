@@ -105,46 +105,38 @@ source ~/.bashrc
 
 ---
 
-## Quick Start
+## Network Isolation (Shared Wi-Fi)
 
-> **Tip:** Open each command in a separate terminal. Every terminal must have the workspace sourced.
+> [!WARNING]
+> **Important for Classrooms / Shared Networks:** If your classmates are running this simulation on the same Wi-Fi, your robots will cross-talk, causing massive time jumps and erratic behavior!
 
-> **Important:** If you previously ran the simulation and it crashed or was killed, run the cleanup script first:
-> ```bash
-> cd ~/diffbot_slam_ws
-> ./clean_restart.sh
-> ```
+To completely isolate your robot from the classroom network, this workspace uses a custom domain ID: **`ROS_DOMAIN_ID=189`**.
 
-**Terminal 1 — Launch simulation (Gazebo + RViz + ArUco Detector):**
+This completely bypasses Wi-Fi cross-talk with other students. This has been automatically added to your `~/.bashrc` and is enforced by the helper scripts.
+
+## Quick Start (Foolproof Method)
+
+To avoid any issues with terminal environments or shared memory, use the provided launch scripts. These scripts automatically isolate your network to Domain 189, clean stale processes, and launch the modules **in a single terminal**.
+
+### 1. Manual Teleop
 ```bash
 cd ~/diffbot_slam_ws
-source install/setup.bash
-ros2 launch diffbot_slam simulation.launch.py
+./run_all.sh
 ```
+*(Teleop will run directly in this terminal. Press `q` to exit, which will automatically safely shut down Gazebo and SLAM).*
 
-**Terminal 2 — Start SLAM (for mapping):**
+### 2. Auto-Navigation & Semantic Patrol
 ```bash
 cd ~/diffbot_slam_ws
-source install/setup.bash
-ros2 launch diffbot_slam slam.launch.py
+./run_nav.sh
 ```
+*(This launches Gazebo, SLAM, Nav2, and the autonomous Semantic Visual Patrol node. You can provide goals via RViz or let ArUco markers guide the robot).*
 
-**Terminal 3 — Teleop (keyboard control):**
-```bash
-source /opt/ros/humble/setup.bash
-ros2 run teleop_twist_keyboard teleop_twist_keyboard
-```
+### Manual Launch (Alternative)
+If you prefer to launch things manually, open fresh terminals and ensure `export ROS_DOMAIN_ID=189` is active:
 
-**Terminal 4 — ArUco Command Follower (robot follows marker commands):**
-```bash
-cd ~/diffbot_slam_ws
-source install/setup.bash
-ros2 run diffbot_slam aruco_command_follower
-```
-
-**Terminal 5 — Nav2 Navigation (autonomous path planning):**
-```bash
-cd ~/diffbot_slam_ws
+**Terminal 1:** `ros2 launch diffbot_slam simulation.launch.py`
+**Terminal 2:** `ros2 launch diffbot_slam slam.launch.py`
 source install/setup.bash
 ros2 launch diffbot_slam navigation.launch.py
 ```
@@ -247,7 +239,8 @@ diffbot_slam_ws/
 | Problem | Solution |
 |---------|----------|
 | Gazebo crashes, port conflicts, or stale processes | Run `./clean_restart.sh` from the workspace root. This kills stale Gazebo/RViz processes, cleans FastRTPS shared memory, and restarts the ROS 2 daemon. |
-| RViz shows `TF_OLD_DATA` or "jump back in time" | **Root cause:** FastRTPS shared memory (SHM) caches old DDS messages from a previous Gazebo session. When the new session starts at a different sim-time, stale messages corrupt every TF buffer. **Fix (already applied):** All launch files now load `config/fastdds_no_shm.xml` which disables SHM transport and forces UDPv4. If it still happens, run `./clean_restart.sh` and relaunch. |
+| RViz shows `TF_OLD_DATA` or "jump back in time" | **Root cause:** This happens either when stale FastRTPS shared memory caches old session messages, OR when another person on your Wi-Fi is running the same simulation. **Fix:** Ensure you use the provided scripts (`run_all.sh` or `run_nav.sh`) to force `ROS_DOMAIN_ID=189` and automatically clear shared memory. |
+| SLAM map not appearing / Teleop not moving robot | Your terminals might be out of date. Close all terminals and open a fresh one to ensure the correct domain ID is loaded, or simply use `run_nav.sh`. |
 | Nav2 plugins fail to load | Ensure the correct Humble plugin formatting in `nav2_params.yaml` (e.g. `nav2_navfn_planner/NavfnPlanner`). |
 | No LiDAR data in RViz | Check Fixed Frame is set to `odom` or `map` in RViz Global Options. |
 | ArUco markers not detected | Ensure camera is pointing at a marker; check `/camera/image_raw` topic. The ArUco detector uses modern `cv2.solvePnP` (not the deprecated `estimatePoseSingleMarkers`). |
