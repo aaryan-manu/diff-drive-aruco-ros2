@@ -178,7 +178,6 @@ When no marker is detected, the robot stops (all velocities = 0).
 ```
 diffbot_slam_ws/
 ├── install_deps.sh                   ← One-command installer
-├── clean_restart.sh                  ← Kill stale processes & clean SHM before relaunching
 ├── README.md
 └── src/
     └── diffbot_slam/
@@ -238,7 +237,7 @@ diffbot_slam_ws/
 
 | Problem | Solution |
 |---------|----------|
-| Gazebo crashes, port conflicts, or stale processes | Run `./clean_restart.sh` from the workspace root. This kills stale Gazebo/RViz processes, cleans FastRTPS shared memory, and restarts the ROS 2 daemon. |
+| Gazebo crashes, port conflicts, or stale processes | Run `./run_all.sh` or `./run_nav.sh` which automatically kills stale Gazebo/RViz processes, cleans FastRTPS shared memory, and restarts the ROS 2 daemon before launching. |
 | RViz shows `TF_OLD_DATA` or "jump back in time" | **Root cause:** This happens either when stale FastRTPS shared memory caches old session messages, OR when another person on your Wi-Fi is running the same simulation. **Fix:** Ensure you use the provided scripts (`run_all.sh` or `run_nav.sh`) to force `ROS_DOMAIN_ID=189` and automatically clear shared memory. |
 | SLAM map not appearing / Teleop not moving robot | Your terminals might be out of date. Close all terminals and open a fresh one to ensure the correct domain ID is loaded, or simply use `run_nav.sh`. |
 | Nav2 plugins fail to load | Ensure the correct Humble plugin formatting in `nav2_params.yaml` (e.g. `nav2_navfn_planner/NavfnPlanner`). |
